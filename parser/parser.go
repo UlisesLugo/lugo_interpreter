@@ -8,6 +8,8 @@ import (
 	"github.com/uliseslugo/lugo_interpreter/token"
 )
 
+// Recursive descent parser.
+// "Top down operator precedence" or "Pratt parser"
 type Parser struct {
 	l *lexer.Lexer
 
@@ -16,6 +18,11 @@ type Parser struct {
 
 	errors []string
 }
+
+type (
+	prefixParseFn func() ast.Expression
+	infixParseFn func(ast.Expression) ast.Expression
+)
 
 func New(l *lexer.Lexer) *Parser {
 	p := &Parser{l: l, errors: []string{}}
@@ -51,6 +58,8 @@ func (p *Parser) parseStatement() ast.Statement {
 	switch p.currToken.Type {
 	case token.LET:
 		return p.parseLetStatement()
+	case token.RETURN:
+		return p.parseReturnStatement()
 	default:
 		return nil
 	}
@@ -78,11 +87,26 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	return stmt
 }
 
+func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
+	stmt := &ast.ReturnStatement{Token: p.currToken}
+
+	p.nextToken()
+
+	// TODO: We're skipping the expressions until we
+	// encounter a semicolon
+	for token.SEMICOLON != p.currToken.Type {
+		p.nextToken()
+	}
+
+	return stmt
+}
+
 func (p *Parser) expectPeek(t token.TokenType) bool {
 	if p.peekToken.Type == t {
 		p.nextToken()
 		return true
 	} else {
+		p.peekError(t)
 		return false
 	}
 }
