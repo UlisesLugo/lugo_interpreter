@@ -8,11 +8,11 @@ import (
 )
 
 func TestLetStatement(t *testing.T) {
-	input :=`
+	input := `
 	let x = 5;
 	let y = 10;
 	let foobar = 838383;
-	` 
+	`
 
 	l := lexer.New(input)
 	p := New(l)
@@ -23,7 +23,7 @@ func TestLetStatement(t *testing.T) {
 		t.Fatalf("ParseProgram() returned nil")
 	}
 	if len(program.Statements) != 3 {
-		t.Fatalf("program.Statements does not contain 3 statements. got=%d",len(program.Statements))
+		t.Fatalf("program.Statements does not contain 3 statements. got=%d", len(program.Statements))
 	}
 
 	tests := []struct {
@@ -34,9 +34,9 @@ func TestLetStatement(t *testing.T) {
 		{"foobar"},
 	}
 
-	for i,tt := range tests {
+	for i, tt := range tests {
 		stmt := program.Statements[i]
-		if !testLetStatement(t, stmt, tt.expectedIdentifier){
+		if !testLetStatement(t, stmt, tt.expectedIdentifier) {
 			return
 		}
 	}
@@ -68,11 +68,11 @@ func testLetStatement(t *testing.T, s ast.Statement, name string) bool {
 }
 
 func TestReturnStatements(t *testing.T) {
-	input :=`
+	input := `
 	return 5;
 	return 10;
 	return 124123;
-	` 
+	`
 
 	l := lexer.New(input)
 	p := New(l)
@@ -83,10 +83,10 @@ func TestReturnStatements(t *testing.T) {
 		t.Fatalf("ParseProgram() returned nil")
 	}
 	if len(program.Statements) != 3 {
-		t.Fatalf("program.Statements does not contain 3 statements. got=%d",len(program.Statements))
+		t.Fatalf("program.Statements does not contain 3 statements. got=%d", len(program.Statements))
 	}
 
-	for _,stmt := range program.Statements {
+	for _, stmt := range program.Statements {
 		returnStmt, ok := stmt.(*ast.ReturnStatement)
 		if !ok {
 			t.Errorf("stmt not *ast.ReturnStatement. got=%T", stmt)
@@ -95,6 +95,37 @@ func TestReturnStatements(t *testing.T) {
 		if returnStmt.TokenLiteral() != "return" {
 			t.Errorf("returnStmt.TokenLiteral not'return', got=%q", returnStmt.TokenLiteral())
 		}
+	}
+}
+
+func TestIdentifierExpression(t *testing.T) {
+	input := "foobar"
+
+	l := lexer.New(input)
+	p := New(l)
+	program := p.ParseProgram()
+	checkParseErrors(t, p)
+
+	if len(program.Statements) != 1 {
+		t.Fatalf("program has not enough statements. got=%d",
+			len(program.Statements))
+	}
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T",
+			program.Statements)
+	}
+
+	ident, ok := stmt.Expression.(*ast.Identifier)
+	if !ok {
+		t.Fatalf("exp not ast.Identifier. got=%T", stmt.Expression)
+	}
+	if ident.Value != input {
+		t.Errorf("ident.Value not %s. got=%s", input, ident.Value)
+	}
+	if ident.TokenLiteral() != input {
+		t.Errorf("ident.TokenLiteral not %s. got=%s", input, ident.TokenLiteral())
 	}
 }
 
