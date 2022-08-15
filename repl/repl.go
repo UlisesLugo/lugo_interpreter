@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/uliseslugo/lugo_interpreter/evaluator"
 	"github.com/uliseslugo/lugo_interpreter/lexer"
 	"github.com/uliseslugo/lugo_interpreter/parser"
 )
@@ -31,7 +32,8 @@ func Start(in io.Reader, out io.Writer) {
 			continue
 		}
 
-		io.WriteString(out, program.String())
+		evaluated := evaluator.Eval(program)
+		io.WriteString(out, evaluated.Inspect())
 		io.WriteString(out, "\n")
 	}
 }
