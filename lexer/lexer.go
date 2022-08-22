@@ -5,10 +5,10 @@ import (
 )
 
 type Lexer struct {
-	input 	 	 string
-	position 	 int  // Curr pos in input (curr char)
+	input        string
+	position     int  // Curr pos in input (curr char)
 	readPosition int  // Curr reading pos in input (after curr char)
-	ch			 byte // current char examined
+	ch           byte // current char examined
 }
 
 func New(input string) *Lexer {
@@ -27,6 +27,7 @@ func (l *Lexer) readChar() {
 	l.readPosition += 1
 }
 
+// To add new tokens add a case in the switch
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 
@@ -75,6 +76,9 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.LBRACE, l.ch)
 	case '}':
 		tok = newToken(token.RBRACE, l.ch)
+	case '"':
+		tok.Type = token.STRING
+		tok.Literal = l.readString()
 	case 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
@@ -112,8 +116,21 @@ func (l *Lexer) readNumber() string {
 	return l.input[position:l.position]
 }
 
+func (l *Lexer) readString() string {
+	position := l.position + 1
+	for {
+		l.readChar()
+		// TODO(uliseslugo): Return error at end of input
+		// TODO(uliseslugo): Add support for char escaping \t
+		if l.ch == '"' || l.ch == 0 {
+			break
+		}
+	}
+	return l.input[position:l.position]
+}
+
 func (l *Lexer) peekChar() byte {
-	if l.readPosition >= len(l.input){
+	if l.readPosition >= len(l.input) {
 		return 0
 	} else {
 		return l.input[l.readPosition]
@@ -126,7 +143,7 @@ func (l *Lexer) skipWhitespace() {
 	}
 }
 
-func newToken(tokenType token.TokenType,ch byte) token.Token{
+func newToken(tokenType token.TokenType, ch byte) token.Token {
 	return token.Token{Type: tokenType, Literal: string(ch)}
 }
 
