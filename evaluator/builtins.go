@@ -1,6 +1,10 @@
 package evaluator
 
-import "github.com/uliseslugo/lugo_interpreter/object"
+import (
+	"fmt"
+
+	"github.com/uliseslugo/lugo_interpreter/object"
+)
 
 var builtins = map[string]*object.Builtin{
 	"len": {
@@ -103,6 +107,17 @@ var builtins = map[string]*object.Builtin{
 
 		},
 	},
+	"puts": {
+		Fn: func(args ...object.Object) object.Object {
+			for _, arg := range args {
+				fmt.Println(arg.Inspect())
+			}
+
+			return NULL
+		},
+	},
+
+	// To add a new builtin
 	// "name": {
 	// 	Fn: func(args ...object.Object) object.Object {
 	//  	// code
